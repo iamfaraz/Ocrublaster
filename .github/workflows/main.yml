@@ -11,32 +11,25 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # 👇 DOWNGRADED TO JAVA 8 (Required for older Gradle/Android versions) 👇
+      - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Generate Fresh Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.5
+          distribution: 'zulu'
+          java-version: '8'
+
+      # 👇 DOWNGRADED TO GRADLE 6.5 (Matches compileSdkVersion 29) 👇
+      - name: Generate Ancient Gradle Wrapper
+        run: gradle wrapper --gradle-version 6.5
+
 
       # 👇 THIS STEP LISTS ALL TASKS TO HELP YOU DIAGNOSE IF IT FAILS AGAIN 👇
-      - name: List Available Gradle Tasks
-        run: ./gradlew tasks --all || true
-
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
       # 👇 TRY SUBMODULE BUILD IF ROOT BUILD FAILS 👇
       - name: Build Debug APK
-        run: |
-          if ./gradlew :app:assembleDebug; then
-            echo "Successfully built via :app:assembleDebug"
-          elif ./gradlew assembleDebug; then
-            echo "Successfully built via assembleDebug"
-          else
-            echo "Standard android tasks failed. Attempting a blind build of all assemble tasks..."
-            ./gradlew assemble
-          fi
+        run: ./gradlew :app:assembleDebug
 
       # Flexible artifact upload that searches the entire directory tree for the APK
       - name: Upload APK Artifact
