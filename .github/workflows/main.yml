@@ -16,14 +16,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Bootstrap Gradle Wrapper
-        run: jar cfe gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -C . .
-        continue-on-error: true 
-        # If the jar already exists, we ignore errors and move on
-
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Generate Fresh Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.5
 
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
