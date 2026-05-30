@@ -1,45 +1,33 @@
 name: Build Android APK
-run-name: ${{ github.event.inputs.repository }}:${{ github.event.inputs.taskName }}
 
 on:
-  workflow_dispatch:
-    inputs:
-      repository:
-        description: "Git repository URL"
-        required: true
-        default: "https://github.com/android/sunflower"
-      jdkVersion:
-        description: "OpenJDK version to use: 8 / 11 / 17 etc."
-        required: false
-        default: "17"
-      taskName:
-        description: "build.gradle task name: assemble[Flavor]Debug"
-        required: false
-        default: "assembleDebug"
+  workflow_dispatch: # Allows you to trigger the build manually
 
 jobs:
   build:
-    runs-on: ubuntu-latest # Android SDK is built-in in this image
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Setup JDK
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: ${{ github.event.inputs.jdkVersion }}
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Clone project
-        run: git clone --depth=1 ${{ github.event.inputs.repository }} workspace
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Build APK
-        working-directory: ./workspace
-        run: |
-          if [ ! -f "gradlew" ]; then gradle wrapper; fi
-          chmod +x gradlew
-          ./gradlew ${{ github.event.inputs.taskName }} --stacktrace
+      - name: Make Gradle Executable
+        run: chmod +x ./gradlew
 
-      - name: Upload the APK artifact with 1 day retention
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          path: ./**/*.apk
-          name: apk-archive
-          retention-days: 1
+          name: my-android-app-apk
+          path: app/build/outputs/apk/debug/*.apk
