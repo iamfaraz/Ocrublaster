@@ -30,9 +30,13 @@ jobs:
       - name: Check Gradle Version
         run: gradle -v
 
-      # 👇 TRY SUBMODULE BUILD IF ROOT BUILD FAILS 👇
+      # 👇 THIS FIXES THE PERMISSION DENIED ERROR 👇
+      - name: Fix Permissions
+        run: chmod +x gradlew || true
+
+      # 👇 USING THE INSTALLED GRADLE DIRECTLY 👇
       - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug
+        run: gradle :app:assembleDebug
 
       # Flexible artifact upload that searches the entire directory tree for the APK
       - name: Upload APK Artifact
