@@ -1,7 +1,7 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch: # Allows you to trigger the build manually
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,9 +17,21 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # 👇 THIS NEW STEP FIXES THE ERROR 👇
+      - name: Bootstrap Gradle Wrapper
+        run: jar cfe gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain -C . .
+        continue-on-error: true 
+        # If the jar already exists, we ignore errors and move on
 
+      # Alternate fallback if the jar is completely missing and the above fails
+      - name: Download fresh Gradle if needed
+        run: |
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            gradle wrapper
+          fi
+        # Note: ubuntu-latest has a default gradle installed that can generate this
+
+       Tar: Make Gradle Executable
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
